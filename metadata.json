@@ -1,0 +1,6 @@
+{
+  "name": "ParkSG - Real-Time Singapore Carpark Availability",
+  "description": "Live carpark lots availability tracker and parking rates guide across Singapore HDB, URA, and commercial centres.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

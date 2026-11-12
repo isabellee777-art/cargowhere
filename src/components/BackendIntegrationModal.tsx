@@ -7,7 +7,7 @@ interface BackendIntegrationModalProps {
 
 export const BackendIntegrationModal: React.FC<BackendIntegrationModalProps> = ({ onClose }) => {
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'endpoints' | 'lta' | 'serverTemplate'>('endpoints');
+  const [activeTab, setActiveTab] = useState<'serverless' | 'endpoints' | 'lta' | 'serverTemplate'>('serverless');
 
   const copyCode = (code: string, id: string) => {
     navigator.clipboard.writeText(code);
@@ -109,10 +109,20 @@ app.listen(PORT, () => {
         </div>
 
         {/* Tab switch */}
-        <div className="flex items-center gap-2 px-6 pt-4 border-b border-slate-200 text-xs font-semibold">
+        <div className="flex items-center gap-2 px-6 pt-4 border-b border-slate-200 text-xs font-semibold overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('serverless')}
+            className={`pb-3 px-1 border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'serverless'
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            Serverless Endpoints (/api)
+          </button>
           <button
             onClick={() => setActiveTab('endpoints')}
-            className={`pb-3 px-1 border-b-2 transition-all ${
+            className={`pb-3 px-1 border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'endpoints'
                 ? 'border-slate-900 text-slate-900'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -122,7 +132,7 @@ app.listen(PORT, () => {
           </button>
           <button
             onClick={() => setActiveTab('lta')}
-            className={`pb-3 px-1 border-b-2 transition-all ${
+            className={`pb-3 px-1 border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'lta'
                 ? 'border-slate-900 text-slate-900'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -132,7 +142,7 @@ app.listen(PORT, () => {
           </button>
           <button
             onClick={() => setActiveTab('serverTemplate')}
-            className={`pb-3 px-1 border-b-2 transition-all ${
+            className={`pb-3 px-1 border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'serverTemplate'
                 ? 'border-slate-900 text-slate-900'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -144,6 +154,56 @@ app.listen(PORT, () => {
 
         {/* Content Body */}
         <div className="overflow-y-auto p-6 space-y-4 text-xs">
+          {activeTab === 'serverless' && (
+            <div className="space-y-4">
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                <div className="flex items-center gap-2 font-bold text-emerald-950 mb-1">
+                  <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                  Serverless Functions Installed in /api
+                </div>
+                <p className="text-emerald-900 leading-relaxed">
+                  The serverless connectors have been created at project root in <code className="bg-white/80 px-1.5 py-0.5 rounded font-mono border border-emerald-300">/api</code>. No API keys are hardcoded in the codebase; the functions securely read from <code className="bg-white/80 px-1.5 py-0.5 rounded font-mono border border-emerald-300">process.env.LTA_ACCOUNT_KEY</code>.
+                </p>
+              </div>
+
+              {/* Endpoints overview */}
+              <div className="space-y-3">
+                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-900 font-mono text-[11px]">GET /api/carparkavailability</span>
+                    <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-medium">Serverless</span>
+                  </div>
+                  <p className="text-slate-600 mt-1">
+                    Connects to <code className="font-mono text-[10px]">https://datamall2.mytransport.sg/ltaodataservice/CarParkAvailabilityv2</code> and forwards the required <code className="font-mono text-[10px]">AccountKey: &lt;LTA_ACCOUNT_KEY&gt;</code> header.
+                  </p>
+                  <div className="mt-2 text-[11px] text-slate-500 font-mono">
+                    Options: <code className="bg-white px-1 border border-slate-200 rounded">?$skip=500</code> for pagination, or <code className="bg-white px-1 border border-slate-200 rounded">?all=true</code> to retrieve all batches.
+                  </div>
+                </div>
+
+                <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-900 font-mono text-[11px]">GET /api/health</span>
+                    <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-medium">Serverless</span>
+                  </div>
+                  <p className="text-slate-600 mt-1">
+                    Health check status probe that verifies whether <code className="font-mono text-[10px]">LTA_ACCOUNT_KEY</code> is configured in the environment.
+                  </p>
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="p-4 bg-slate-900 text-slate-200 rounded-xl space-y-2">
+                <div className="font-bold text-white text-xs">How to input your LTA AccountKey:</div>
+                <ol className="list-decimal list-inside space-y-1 text-slate-300 text-[11px] leading-relaxed">
+                  <li>Obtain your free key from Land Transport Authority at <strong className="text-white">datamall.lta.gov.sg</strong>.</li>
+                  <li>Set environment variable <code className="bg-slate-800 text-amber-300 px-1 py-0.5 rounded font-mono">LTA_ACCOUNT_KEY=&quot;your_key_here&quot;</code> in your deployment platform (Vercel, Netlify, Cloud Run, or <code className="bg-slate-800 text-amber-300 px-1 py-0.5 rounded font-mono">.env</code>).</li>
+                  <li>Requests to <code className="bg-slate-800 text-emerald-300 px-1 py-0.5 rounded font-mono">/api/carparkavailability</code> will automatically authenticate and return live HDB, LTA, and URA lots!</li>
+                </ol>
+              </div>
+            </div>
+          )}
+
           {activeTab === 'endpoints' && (
             <div className="space-y-4">
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">

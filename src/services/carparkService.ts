@@ -54,6 +54,27 @@ export async function fetchLiveCarparks(): Promise<{ carparks: Carpark[]; meta: 
   let statusText = 'Live Connected (data.gov.sg & LTA)';
   let mergedCarparks: Carpark[] = [...SINGAPORE_CARPARKS];
 
+  // 1. Check if serverless LTA DataMall endpoint is active (/api/carparkavailability)
+  try {
+    const ltaCheckController = new AbortController();
+    const ltaTimeout = setTimeout(() => ltaCheckController.abort(), 2000);
+    const ltaRes = await fetch('/api/carparkavailability', {
+      signal: ltaCheckController.signal,
+      headers: { Accept: 'application/json' }
+    });
+    clearTimeout(ltaTimeout);
+
+    if (ltaRes.ok) {
+      const ltaJson = await ltaRes.json();
+      if (ltaJson?.value && Array.isArray(ltaJson.value) && ltaJson.value.length > 0) {
+        isLive = true;
+        statusText = `Live Connected (LTA DataMall v2 - ${ltaJson.value.length} lots)`;
+      }
+    }
+  } catch {
+    // /api/carparkavailability not yet deployed on server or key not set, seamlessly continue
+  }
+
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 4000);
